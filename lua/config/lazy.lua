@@ -80,6 +80,6 @@ function map(mode, lhs, rhs, opts)
 end
 
 -- shortcut for insert/visual to normal
---map('i', 'lk', '<Esc>')
---map('v', 'lk', '<Esc>')
---map('c', 'lk', '<Esc>')
+map('i', '  ', '<Esc>')
+map('v', '  ', '<Esc>')
+map('c', '  ', '<Esc>')
