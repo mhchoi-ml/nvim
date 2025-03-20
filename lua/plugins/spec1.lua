@@ -1,14 +1,17 @@
 return {
 	{
 		"folke/which-key.nvim",
-		lazy = false
+		--lazy = true
+		event = "VeryLazy",
+		opts = {
+		},
 	},
 
 	{
 		"nvim-tree/nvim-web-devicons",
 		lazy = true
 	},
-	
+
 	{
 		"nvim-tree/nvim-tree.lua",
 		lazy = false,
@@ -29,33 +32,16 @@ return {
 	},
 
 	{
---		"airblade/vim-gitgutter",
---		lazy = false,
---		keys = {
---			{ "<leader>hp", "<Plug>(GitGutterPreviewHunk)", desc = "git preview"}
---		},
---		init = function()
---			-- set git hunk color
---			vim.cmd[[
---				highlight GitGutterAdd    guifg=#009900 ctermfg=Green
---				highlight GitGutterChange guifg=#bbbb00 ctermfg=Yellow
---				highlight GitGutterDelete guifg=#ff2222 ctermfg=Red
---				highlight clear SignColumn
---			]]
---			-- set floating window color
---			vim.api.nvim_set_hl(0, "FloatBorder", {bg="#3B4252", fg="#5E81AC"})
---			vim.api.nvim_set_hl(0, "NormalFloat", {bg="#3B4252"})
---		end,
 		"lewis6991/gitsigns.nvim",
 		config = function()
 			require('gitsigns').setup {
 				signs = {
-				add          = { text = '+' },
-				change       = { text = '~' },
-				delete       = { text = '_' },
-				topdelete    = { text = '‾' },
-				changedelete = { text = '~~' },
-				untracked    = { text = '┆' },
+					add          = { text = '+' },
+					change       = { text = '~' },
+					delete       = { text = '_' },
+					topdelete    = { text = '‾' },
+					changedelete = { text = '~~' },
+					untracked    = { text = '┆' },
 				},
 				signs_staged = {
 					add          = { text = '+' },
@@ -97,6 +83,70 @@ return {
 					row = 0,
 					col = 1
 				},
+				on_attach = function(bufnr)
+					local gitsigns = require('gitsigns')
+
+					local function map(mode, l, r, opts)
+						opts = opts or {}
+						opts.buffer = bufnr
+						vim.keymap.set(mode, l, r, opts)
+					end
+
+					-- Navigation
+					map('n', ']c', function()
+						if vim.wo.diff then
+							vim.cmd.normal({']c', bang = true})
+						else
+							gitsigns.nav_hunk('next')
+						end
+					end)
+
+					map('n', '[c', function()
+						if vim.wo.diff then
+							vim.cmd.normal({'[c', bang = true})
+						else
+							gitsigns.nav_hunk('prev')
+						end
+					end)
+
+					-- Actions
+					map('n', '<leader>hs', gitsigns.stage_hunk)
+					map('n', '<leader>hr', gitsigns.reset_hunk)
+
+					map('v', '<leader>hs', function()
+						gitsigns.stage_hunk({ vim.fn.line('.'), vim.fn.line('v') })
+					end)
+
+					map('v', '<leader>hr', function()
+						gitsigns.reset_hunk({ vim.fn.line('.'), vim.fn.line('v') })
+					end)
+
+					map('n', '<leader>hS', gitsigns.stage_buffer)
+					map('n', '<leader>hR', gitsigns.reset_buffer)
+					map('n', '<leader>hp', gitsigns.preview_hunk)
+					map('n', '<leader>hi', gitsigns.preview_hunk_inline)
+
+					map('n', '<leader>hb', function()
+						gitsigns.blame_line({ full = true })
+					end)
+
+					map('n', '<leader>hd', gitsigns.diffthis)
+
+					map('n', '<leader>hD', function()
+						gitsigns.diffthis('~')
+					end)
+
+					map('n', '<leader>hq', function() gitsigns.setqflist('all') end)
+					map('n', '<leader>hq', gitsigns.setqflist)
+
+					-- toggles
+					map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
+					map('n', '<leader>td', gitsigns.toggle_deleted)
+					map('n', '<leader>tw', gitsigns.toggle_word_diff)
+
+					-- text object
+					map({'o', 'x'}, 'ih', gitsigns.select_hunk)
+				end
 			}
 		end,
 	},
@@ -108,18 +158,18 @@ return {
 			require("lualine").setup{
 				options = {
 					theme = 'gruvbox',
-			    		icons_enabled = false,
-		    		},
-		    		tabline = {
-			  		lualine_z = {
-			    			{
-			      			'datetime',
-			      			-- options: default, us, uk, iso, or your own format string ("%H:%M", etc..)
-			      			style = '%H:%M'
-			    			}
-			  		}
+					icons_enabled = false,
+				},
+				tabline = {
+					lualine_z = {
+						{
+							'datetime',
+							-- options: default, us, uk, iso, or your own format string ("%H:%M", etc..)
+							style = '%H:%M'
+						}
+					}
 				}
 			}
-	    end,
+		end,
 	}
 }
